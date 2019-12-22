@@ -1,2 +1,2 @@
-# OASYS1-PHOTOCLUB
-OASYS Extension by srio
+# OASYS1-PHOTOLAB
+OASYS Extension to process photographies by srio
