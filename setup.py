@@ -5,7 +5,7 @@ import os
 import sys
 import subprocess
 
-NAME = 'OASYS1-PHOTOCLUB'
+NAME = 'OASYS1-PHOTOLAB'
 
 VERSION = '0.0.1'
 ISRELEASED = False
@@ -15,8 +15,8 @@ README_FILE = os.path.join(os.path.dirname(__file__), 'README.md')
 LONG_DESCRIPTION = open(README_FILE).read()
 AUTHOR = 'Manuel Sanchez del Rio'
 AUTHOR_EMAIL = 'msanchezdelrio@gmail.com'
-URL = 'https://github.com/srio/OASYS1-PHOTOCLUB'
-DOWNLOAD_URL = 'https://github.com/srio/OASYS1-PHOTOCLUB'
+URL = 'https://github.com/srio/OASYS1-PHOTOLAB'
+DOWNLOAD_URL = 'https://github.com/srio/OASYS1-PHOTOLAB'
 LICENSE = 'MIT'
 
 KEYWORDS = (
@@ -62,17 +62,17 @@ from setuptools import find_packages, setup
 PACKAGES = find_packages(exclude = ('*.tests', '*.tests.*', 'tests.*', 'tests'), )
 
 PACKAGE_DATA = {
-    "orangecontrib.photoclub.widgets.tools":["icons/*.png", "icons/*.jpg"],
+    "orangecontrib.photolab.widgets.tools":["icons/*.png", "icons/*.jpg"],
 }
 
-NAMESPACE_PACAKGES = ["orangecontrib","orangecontrib.photoclub", "orangecontrib.photoclub.widgets"]
+NAMESPACE_PACAKGES = ["orangecontrib","orangecontrib.photolab", "orangecontrib.photolab.widgets"]
 
 ENTRY_POINTS = {
-    'oasys.addons' : ("PHOTO CLUB = orangecontrib.photoclub", ),
+    'oasys.addons' : ("PHOTO LAB = orangecontrib.photolab", ),
     'oasys.widgets' : (
-        "Photo Club Tools = orangecontrib.photoclub.widgets.tools",
+        "Photo Lab Tools = orangecontrib.photolab.widgets.tools",
     ),
-    'oasys.menus' : ("photoclubmenu = orangecontrib.photoclub.menu",)
+    'oasys.menus' : ("photolabmenu = orangecontrib.photolab.menu",)
 }
 
 if __name__ == '__main__':
@@ -105,4 +105,4 @@ if __name__ == '__main__':
               zip_safe = False,
               )
 
-    if is_beta: raise NotImplementedError("This version of Photo CLub doesn't work with Oasys1 beta.\nPlease install OASYS1 final release")
+    if is_beta: raise NotImplementedError("This version of Photo Lab doesn't work with Oasys1 beta.\nPlease install OASYS1 final release")
