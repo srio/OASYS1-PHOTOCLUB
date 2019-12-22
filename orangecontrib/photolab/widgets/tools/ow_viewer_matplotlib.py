@@ -10,6 +10,9 @@ from oasys.widgets.gui import ConfirmDialog
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+
+from srxraylib.plot.gol import plot_image
 
 
 class OWFileSelector(widget.OWWidget):
@@ -38,8 +41,14 @@ class OWFileSelector(widget.OWWidget):
 
     CONTROL_AREA_WIDTH = 405
     TABS_AREA_HEIGHT = 560
+    TABS_AREA_WIDTH = MAX_WIDTH - CONTROL_AREA_WIDTH
 
-    filename = Setting("/Users/srio/Desktop/fotos para imprimir/DSC_0293.jpg")
+    filename = Setting("None")
+
+    show_axes = Setting(0)
+    show_colormap = Setting(0)
+
+    current_image = None
 
     def __init__(self):
         super().__init__()
@@ -59,22 +68,42 @@ class OWFileSelector(widget.OWWidget):
         general_options_box = oasysgui.widgetBox(self.controlArea, "General Options", addSpace=True, orientation="vertical", width=400)
 
 
+        gui.button(general_options_box, self, "View/Refresh", callback=self.run_action, height=45)
+
+        gui.separator(general_options_box)
+
         file_box = oasysgui.widgetBox(general_options_box, "", addSpace=False, orientation="horizontal", height=25)
-
         self.le_file = oasysgui.lineEdit(file_box, self, "filename", label="Select file", addSpace=False, orientation="horizontal")
-
         gui.button(file_box, self, "...", callback=self.select_file)
 
         gui.separator(general_options_box)
 
-        gui.button(general_options_box, self, "View/Refresh", callback=self.run_action, height=45)
+        gui.comboBox(general_options_box, self, "show_axes", label="Show axes",labelWidth=220,
+                                     items=["No","Yes"],
+                                     sendSelectedValue=False, orientation="horizontal")
 
+        gui.separator(general_options_box)
+
+        gui.comboBox(general_options_box, self, "show_colormap", label="Show colormap",labelWidth=220,
+                                     items=["No","Yes"],
+                                     sendSelectedValue=False, orientation="horizontal")
+
+        gui.separator(general_options_box)
 
         # MAIN AREA
-        self.main_tabs = oasysgui.tabWidget(self.mainArea)
 
-        plot_tab = oasysgui.createTabPage(self.main_tabs, "Plots")
-        out_tab = oasysgui.createTabPage(self.main_tabs, "Output")
+
+        tabs_setting = oasysgui.tabWidget(self.mainArea)
+
+        tmp = oasysgui.createTabPage(tabs_setting, "View")
+        self.view_id = gui.widgetBox(tmp, "", addSpace=True, orientation="vertical")
+        self.view_id.setFixedHeight(self.TABS_AREA_HEIGHT - 30)
+        self.view_id.setFixedWidth(self.TABS_AREA_WIDTH - 20)
+
+        tmp = oasysgui.createTabPage(tabs_setting, "Info")
+        self.info_id = oasysgui.textArea() #height=self.IMAGE_HEIGHT-35)
+        info_box = oasysgui.widgetBox(tmp, "", addSpace=True, orientation="horizontal") #, height = self.IMAGE_HEIGHT-20, width = self.IMAGE_WIDTH-20)
+        info_box.layout().addWidget(self.info_id)
 
 
 
@@ -84,33 +113,55 @@ class OWFileSelector(widget.OWWidget):
 
     def run_action(self):
         # if ConfirmDialog.confirmed(self):
-        self.view(self.load_file_to_numpy_array())
+        self.view()
         self.send("filename", self.filename)
 
     def set_input(self, input_data):
         self.filename = input_data
+        self.load_file_to_numpy_array()
 
     def load_file_to_numpy_array(self):
-        npimg = mpimg.imread(self.filename)
-        return npimg
+        self.current_image = mpimg.imread(self.filename)
 
-    def view(self,npimg,colorbar=True):
-        cmap = None
+    def view(self):
         cmap = "hot"
         cmap = 'nipy_spectral'
 
-        imgplot = plt.imshow(npimg, cmap=cmap)
-        if colorbar:
+        if self.current_image is None:
+            raise Exception("Please load an image....")
+
+        f = plt.figure()
+        plt.imshow(self.current_image, cmap=cmap)
+
+        if not(self.show_axes):
+            plt.xticks([])
+            plt.yticks([])
+
+        if self.show_colormap:
             plt.colorbar()
-        plt.show()
+
+        # f = plot_image(npimg[0], cmap=cmap, show=1, aspect='auto')
+        # f[1].plot(energy, energy*0+coordinates_at_hlimit[0])
+        # f[1].plot(energy, energy*0+coordinates_at_hlimit[1])
+
+
+        figure_canvas = FigureCanvasQTAgg(f)
+        self.view_id.layout().removeItem(self.view_id.layout().itemAt(0))
+        self.view_id.layout().addWidget(figure_canvas)
+
+
 
 if __name__ == "__main__":
+
 
     import sys
     from oasys.widgets.exchange import DataExchangeObject
 
     app = QApplication(sys.argv)
     w = OWFileSelector()
+
+    w.filename = "/Users/srio/Desktop/fotos para imprimir/DSC_0293.jpg"
+    w.load_file_to_numpy_array()
 
     w.show()
 
