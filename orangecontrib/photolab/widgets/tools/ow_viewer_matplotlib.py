@@ -8,9 +8,11 @@ from oasys.widgets import widget
 import oasys.widgets.gui as oasysgui
 from oasys.widgets.gui import ConfirmDialog
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+import matplotlib
 import matplotlib.image as mpimg
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
 
 from srxraylib.plot.gol import plot_image
 
@@ -130,22 +132,30 @@ class OWFileSelector(widget.OWWidget):
         if self.current_image is None:
             raise Exception("Please load an image....")
 
-        f = plt.figure()
-        plt.imshow(self.current_image, cmap=cmap)
+        f = Figure()
+        # A canvas must be manually attached to the figure (pyplot would automatically
+        # do it).  This is done by instantiating the canvas with the figure as
+        # argument.
+        figure_canvas = FigureCanvasQTAgg(f)
+        ax = f.add_subplot(111)
+        ax.imshow(self.current_image[:,:,:])
+
+
 
         if not(self.show_axes):
-            plt.xticks([])
-            plt.yticks([])
-
+            ax.set_xticks([], minor=False)
+            ax.set_yticks([], minor=False)
+        #
         if self.show_colormap:
-            plt.colorbar()
+            ax2 = f.add_axes([0.9, 0.1, 0.05, 0.7])
+            cmap = matplotlib.cm.gray
+            norm = matplotlib.colors.Normalize(vmin=0, vmax=255)
+            cb1 = matplotlib.colorbar.ColorbarBase(ax2,
+                                                   norm=norm,
+                                                   cmap=cmap,
+                                                   orientation='vertical')
 
-        # f = plot_image(npimg[0], cmap=cmap, show=1, aspect='auto')
-        # f[1].plot(energy, energy*0+coordinates_at_hlimit[0])
-        # f[1].plot(energy, energy*0+coordinates_at_hlimit[1])
 
-
-        figure_canvas = FigureCanvasQTAgg(f)
         self.view_id.layout().removeItem(self.view_id.layout().itemAt(0))
         self.view_id.layout().addWidget(figure_canvas)
 
