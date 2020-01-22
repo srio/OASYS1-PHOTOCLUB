@@ -5,7 +5,7 @@ NAME = "Tools"
 
 DESCRIPTION = "Widgets for Photoclub/Tools"
 
-BACKGROUND = "#b8bcdb"
+BACKGROUND = "#CED82C"
 
 ICON = "icons/tools.png"
 

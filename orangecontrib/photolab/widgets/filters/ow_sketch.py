@@ -21,26 +21,21 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from srxraylib.plot.gol import plot_image
 
 
-class OWFileSelector(widget.OWWidget):
-    name = "Viewer (matplotlib)"
-    description = "Viewer (matplotlib)"
-    icon = "icons/viewer.png"
+class OWSketch(widget.OWWidget):
+    name = "Sketch"
+    description = "Sketch"
+    icon = "icons/sketch.png"
     maintainer = "Manuel Sanchez del Rio"
     maintainer_email = "msanchezdelrio@gmail.com"
-    priority = 15
-    category = "Tools"
+    priority = 10
+    category = "Filters"
     keywords = ["data", "view"]
 
     want_main_area = 1
 
-    inputs = [("filename", str, "set_input"),
-              ("image", numpy.ndarray, "set_input")]
+    inputs = [("image", numpy.ndarray, "set_input")]
 
-    outputs = [{"name": "filename",
-                "type": str,
-                "doc": "selected file name",
-                "id": "filename"},
-               {"name": "image",
+    outputs = [{"name": "image",
                 "type": numpy.ndarray,
                 "doc": "numpy array with image",
                 "id": "image"},
@@ -54,8 +49,6 @@ class OWFileSelector(widget.OWWidget):
     CONTROL_AREA_WIDTH = 405
     TABS_AREA_HEIGHT = 560
     TABS_AREA_WIDTH = MAX_WIDTH - CONTROL_AREA_WIDTH
-
-    filename = Setting("None")
 
     show_axes = Setting(0)
     show_colormap = Setting(0)
@@ -85,28 +78,23 @@ class OWFileSelector(widget.OWWidget):
 
         gui.separator(general_options_box)
 
-        file_box = oasysgui.widgetBox(general_options_box, "", addSpace=False, orientation="horizontal", height=25)
-        self.le_file = oasysgui.lineEdit(file_box, self, "filename", label="Select file", addSpace=False, orientation="horizontal")
-        gui.button(file_box, self, "...", callback=self.select_file)
 
-        gui.separator(general_options_box)
-
-        gui.comboBox(general_options_box, self, "show_axes", label="Show axes",labelWidth=220,
-                                     items=["No","Yes"],
-                                     sendSelectedValue=False, orientation="horizontal",
-                                     callback=self.view)
-
-        gui.separator(general_options_box)
-
-        gui.comboBox(general_options_box, self, "show_colormap", label="Show colormap",labelWidth=220,
-                                     items=["No","Yes"],
-                                     sendSelectedValue=False, orientation="horizontal",
-                                     callback=self.view)
-
-        gui.comboBox(general_options_box, self, "show_info", label="Show info",labelWidth=220,
-                                     items=["No","Yes"],
-                                     sendSelectedValue=False, orientation="horizontal",
-                                     callback=self.view)
+        # gui.comboBox(general_options_box, self, "show_axes", label="Show axes",labelWidth=220,
+        #                              items=["No","Yes"],
+        #                              sendSelectedValue=False, orientation="horizontal",
+        #                              callback=self.view)
+        #
+        # gui.separator(general_options_box)
+        #
+        # gui.comboBox(general_options_box, self, "show_colormap", label="Show colormap",labelWidth=220,
+        #                              items=["No","Yes"],
+        #                              sendSelectedValue=False, orientation="horizontal",
+        #                              callback=self.view)
+        #
+        # gui.comboBox(general_options_box, self, "show_info", label="Show info",labelWidth=220,
+        #                              items=["No","Yes"],
+        #                              sendSelectedValue=False, orientation="horizontal",
+        #                              callback=self.view)
 
         gui.separator(general_options_box)
 
@@ -126,29 +114,15 @@ class OWFileSelector(widget.OWWidget):
         info_box.layout().addWidget(self.info_id)
 
 
-
-    def select_file(self):
-        self.filename = oasysgui.selectFileFromDialog(self, self.filename, "Open File", file_extension_filter="*.*")
-        self.le_file.setText(self.filename)
-
     def run_action(self):
         # if ConfirmDialog.confirmed(self):
         self.view()
-        self.send("filename", self.filename)
         self.send("image", self.current_image)
 
     def set_input(self, input_data):
-        if isinstance(input_data,str):
-            self.filename = input_data
-            self.load_file_to_numpy_array()
-        elif isinstance(input_data,numpy.ndarray):
-            self.filename = ""
+        if input_data is not None:
             self.current_image = input_data
-
-        self.run_action()
-
-    def load_file_to_numpy_array(self):
-        self.current_image = mpimg.imread(self.filename)
+            self.run_action()
 
     def view(self):
         cmap = "hot"
@@ -187,21 +161,13 @@ class OWFileSelector(widget.OWWidget):
         # self.triangulation_id.layout().addWidget(toolbar)
         # self.triangulation_id.layout().addWidget(figure_canvas)
 
-        if self.show_info == 1:
-            ax.set_title(self.filename, fontsize=12)
+        # if self.show_info == 1:
+        #     ax.set_title(self.filename, fontsize=12)
 
-        if not(self.show_axes):
+        if True: #not(self.show_axes):
             ax.set_xticks([], minor=False)
             ax.set_yticks([], minor=False)
-        #
-        if self.show_colormap:
-            ax2 = f.add_axes([0.9, 0.1, 0.05, 0.7])
-            cmap = matplotlib.cm.gray
-            norm = matplotlib.colors.Normalize(vmin=0, vmax=255)
-            cb1 = matplotlib.colorbar.ColorbarBase(ax2,
-                                                   norm=norm,
-                                                   cmap=cmap,
-                                                   orientation='vertical')
+
 
 
         self.view_id.layout().removeItem(self.view_id.layout().itemAt(1))
@@ -216,11 +182,12 @@ if __name__ == "__main__":
 
     import sys
     from oasys.widgets.exchange import DataExchangeObject
+    import matplotlib.image as mpimg
 
     app = QApplication(sys.argv)
-    w = OWFileSelector()
+    w = OWSketch()
 
-    w.set_input("/Users/srio/Public/ines/DSC_1575.jpg")
+    w.set_input(mpimg.imread("/Users/srio/Public/ines/DSC_1575.jpg"))
     w.view()
 
     w.show()

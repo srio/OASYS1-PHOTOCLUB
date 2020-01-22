@@ -11,14 +11,14 @@ from oasys.widgets.gui import ConfirmDialog
 class OWFileSelector(widget.OWWidget):
     name = "File Selector"
     description = "File Selector"
-    icon = "icons/fileselector.png"
+    icon = "icons/selector.png"
     maintainer = "Manuel Sanchez del Rio"
     maintainer_email = "msanchezdelrio@gmail.com"
-    priority = 1
+    priority = 10
     category = "Tools"
     keywords = ["data", "file", "load", "read"]
 
-    want_main_area = 1
+    want_main_area = 5
 
     #inputs = [("my_input_data", object, "set_input"),]
 

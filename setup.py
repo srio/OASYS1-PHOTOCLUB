@@ -22,6 +22,8 @@ LICENSE = 'MIT'
 KEYWORDS = (
     'photography',
     'pillow',
+    'rawpy',
+    'opencv-python',
     'oasys1',
 )
 
