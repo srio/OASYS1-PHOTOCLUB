@@ -9,4 +9,4 @@ BACKGROUND = "#CED82C"
 
 ICON = "icons/tools.png"
 
-PRIORITY = 10000
+PRIORITY = 10005

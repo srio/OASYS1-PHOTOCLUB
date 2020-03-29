@@ -1,6 +1,8 @@
 recursive-include orangecontrib *.pyx
 recursive-include orangecontrib *.py
 
+recursive-include orangecontrib/photolab/widgets/viewers *.png *.svg *.ico *.jpg *.bmp
 recursive-include orangecontrib/photolab/widgets/tools *.png *.svg *.ico *.jpg *.bmp
+recursive-include orangecontrib/photolab/widgets/filters *.png *.svg *.ico *.jpg *.bmp
 
 include README.md

@@ -5,9 +5,31 @@ import os
 import sys
 import subprocess
 
+#
+# Memorandum:
+#
+# Install from sources:
+#     git clone https://github.com/srio/OASYS1-PHOTOLAB
+#     cd OASYS1-PHOTOLAB
+#     python setup.py sdist build
+#     # install
+#     python -m pip install .
+#     # or install using links (developer)
+#     python -m pip install -e . --no-deps --no-binary :all:
+#
+# Upload to pypi (when uploading, increment the version number):
+#     python setup.py register (only once, not longer needed)
+#     python setup.py sdist
+#     python setup.py bdist_wheel
+#     python -m twine upload dist/*
+#
+# Install from pypi:
+#     python -m pip install OASYS1-PHOTOLAB
+#
+
 NAME = 'OASYS1-PHOTOLAB'
 
-VERSION = '0.0.1'
+VERSION = '0.0.3'
 ISRELEASED = False
 
 DESCRIPTION = 'WIDGETS DEVELOPED BY M. SANCHEZ DEL RIO FOR PROCESSING PHOTOGRAPHIES'
@@ -65,6 +87,8 @@ PACKAGES = find_packages(exclude = ('*.tests', '*.tests.*', 'tests.*', 'tests'),
 
 PACKAGE_DATA = {
     "orangecontrib.photolab.widgets.tools":["icons/*.png", "icons/*.jpg"],
+    "orangecontrib.photolab.widgets.viewers":["icons/*.png", "icons/*.jpg"],
+    "orangecontrib.photolab.widgets.filters":["icons/*.png", "icons/*.jpg"]
 }
 
 NAMESPACE_PACAKGES = ["orangecontrib","orangecontrib.photolab", "orangecontrib.photolab.widgets"]
@@ -72,7 +96,9 @@ NAMESPACE_PACAKGES = ["orangecontrib","orangecontrib.photolab", "orangecontrib.p
 ENTRY_POINTS = {
     'oasys.addons' : ("PHOTO LAB = orangecontrib.photolab", ),
     'oasys.widgets' : (
+        "Photo Lab Viewers = orangecontrib.photolab.widgets.viewers",
         "Photo Lab Tools = orangecontrib.photolab.widgets.tools",
+        "Photo Lab Filters = orangecontrib.photolab.widgets.filters",
     ),
     'oasys.menus' : ("photolabmenu = orangecontrib.photolab.menu",)
 }

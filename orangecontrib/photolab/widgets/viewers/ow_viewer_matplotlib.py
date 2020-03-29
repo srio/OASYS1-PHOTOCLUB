@@ -21,7 +21,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from srxraylib.plot.gol import plot_image
 
 
-class OWFileSelector(widget.OWWidget):
+class OWFileViewer(widget.OWWidget):
     name = "Viewer (matplotlib)"
     description = "Viewer (matplotlib)"
     icon = "icons/viewer.png"
@@ -218,7 +218,7 @@ if __name__ == "__main__":
     from oasys.widgets.exchange import DataExchangeObject
 
     app = QApplication(sys.argv)
-    w = OWFileSelector()
+    w = OWFileViewer()
 
     w.set_input("/Users/srio/Public/ines/DSC_1575.jpg")
     w.view()

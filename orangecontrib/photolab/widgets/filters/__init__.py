@@ -9,4 +9,4 @@ BACKGROUND = "#CED82C"
 
 ICON = "icons/filters.png"
 
-PRIORITY = 10001
+PRIORITY = 10010
