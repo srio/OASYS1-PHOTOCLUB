@@ -15,6 +15,9 @@ from orangecontrib.photolab.widgets.gui.ow_photolab_widget import OWPhotolabWidg
 import matplotlib.image as mpimg
 
 
+from PyQt5.QtWidgets import QApplication, QFileSystemModel, QTreeView, QWidget, QVBoxLayout
+
+
 class OWFileSelector(OWPhotolabWidget):
     name = "File Selector"
     description = "File Selector"
@@ -40,12 +43,39 @@ class OWFileSelector(OWPhotolabWidget):
     def __init__(self):
         super().__init__()
 
-        file_box = oasysgui.widgetBox(self.general_options_box, "", addSpace=False, orientation="horizontal", height=25)
+        file_box = oasysgui.widgetBox(self.general_options_box, "", addSpace=False, orientation="vertical", height=25)
         self.le_file = oasysgui.lineEdit(file_box, self, "filename", label="Select file", addSpace=False, orientation="horizontal")
-        gui.button(file_box, self, "...", callback=self.select_file)
-        gui.separator(self.general_options_box)
+        # gui.button(file_box, self, "...", callback=self.select_file)
+        # gui.separator(self.general_options_box)
         #
 
+        file_box = oasysgui.widgetBox(self.general_options_box, "", addSpace=False,
+                                      orientation="vertical")  # , height=250)
+        self.model = QFileSystemModel()
+        self.model.setRootPath('/Users/srio/Desktop/')
+        self.tree = QTreeView(file_box) #self.general_options_box)
+        self.tree.setModel(self.model)
+
+        self.tree.setAnimated(False)
+        self.tree.setIndentation(20)
+        self.tree.setSortingEnabled(True)
+
+        self.tree.setWindowTitle("Dir View")
+        self.tree.resize(370, 600) #(640, 480)
+        self.tree.clicked.connect(self.onClicked)
+
+        # gui.separator(self.general_options_box)
+        file_box = oasysgui.widgetBox(self.general_options_box, "", addSpace=False, orientation="vertical", height=25)
+
+        # self.le_file = oasysgui.lineEdit(file_box, self, "filename",
+        #                     label="Select file", addSpace=False, orientation="horizontal")
+        # self.tree.resize(370, 600) #(640, 480)
+
+    def onClicked(self, index):
+        path = self.sender().model().filePath(index)
+        print(path)
+        self.le_file.setText(path)
+        self.process()
 
     def select_file(self):
         self.filename = oasysgui.selectFileFromDialog(self, self.filename, "Open File", file_extension_filter="*.*")
