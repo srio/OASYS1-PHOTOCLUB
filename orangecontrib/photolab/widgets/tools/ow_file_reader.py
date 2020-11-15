@@ -8,9 +8,9 @@ from orangewidget import gui, widget
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui, congruence
 from orangewidget import gui as orangegui
+from orangecontrib.photolab.util.photolab_objects import PLPhoto
 
-
-import matplotlib.image as mpimg
+# import matplotlib.image as mpimg
 
 
 class OWFileReader(widget.OWWidget):
@@ -27,6 +27,14 @@ class OWFileReader(widget.OWWidget):
                 "type": numpy.ndarray,
                 "doc": "numpy array with image",
                 "id": "image"},
+                {"name": "PLPhoto",
+                "type": PLPhoto,
+                "doc": "photolab photo",
+                "id": "photolab photo"},
+                {"name": "filename",
+                 "type": str,
+                 "doc": "selected file name",
+                 "id": "filename"},
                ]
 
     want_main_area = 0
@@ -56,7 +64,6 @@ class OWFileReader(widget.OWWidget):
 
         gui.button(figure_box, self, "...", callback=self.selectFile)
 
-        #gui.separator(left_box_1, height=20)
 
         button = gui.button(self.controlArea, self, "Read Image File", callback=self.read_file)
         button.setFixedHeight(45)
@@ -67,7 +74,8 @@ class OWFileReader(widget.OWWidget):
         self.le_beam_file_name.setText(oasysgui.selectFileFromDialog(self, self.filename, "Open Image File"))
 
     def load_file_to_numpy_array(self):
-        self.current_image = mpimg.imread(self.filename)
+
+        self.current_image = PLPhoto(url=self.filename) # mpimg.imread(self.filename)
 
     def read_file(self):
         self.setStatusMessage("")
@@ -86,7 +94,9 @@ class OWFileReader(widget.OWWidget):
         except:
             raise Exception("Failed to read file %s"%filename)
 
-        self.send("image", self.current_image)
+        self.send("filename", self.current_image.get_url())
+        self.send("image", self.current_image.image())
+        self.send("PLPhoto", self.current_image)
 
 
 if __name__ == "__main__":

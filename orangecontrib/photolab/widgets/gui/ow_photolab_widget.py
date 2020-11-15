@@ -1,16 +1,22 @@
+import sys
 
 from oasys.widgets import widget
+from PyQt5 import QtWidgets
 
 from orangewidget import gui
 from orangewidget.settings import Setting
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QRect
+from PyQt5.QtGui import QTextCursor
 
 import oasys.widgets.gui as oasysgui
 from oasys.widgets.gui import ConfirmDialog
 
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSizePolicy
+
+from orangecontrib.photolab.widgets.gui.python_script import PythonScript
+from oasys.util.oasys_util import TriggerIn, EmittingStream
 
 # import matplotlib.pyplot as plt
 import matplotlib
@@ -30,10 +36,6 @@ class OWPhotolabWidget(widget.OWWidget):
     warning_id = 0
     info_id = 0
 
-    # MAX_WIDTH = 1320
-    # MAX_HEIGHT = 700
-    # CONTROL_AREA_WIDTH = 405
-    # TABS_AREA_HEIGHT = 560
 
     IMAGE_WIDTH = 760
     IMAGE_HEIGHT = 545
@@ -42,9 +44,9 @@ class OWPhotolabWidget(widget.OWWidget):
     CONTROL_AREA_WIDTH = 405
     TABS_AREA_HEIGHT = 560
 
-    # photolab_live_propagation_mode = "Unknown"
+    view_type = Setting(1)
 
-    def __init__(self, show_general_option_box=True, show_automatic_box=False):
+    def __init__(self, show_general_option_box=True, show_automatic_box=False, show_view_options=True, show_script_tab=True):
         super().__init__()
 
         self.leftWidgetPart.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
@@ -80,21 +82,40 @@ class OWPhotolabWidget(widget.OWWidget):
 
         ##
         tab_preview = oasysgui.createTabPage(self.main_tabs, "Preview")
+
+
+        ######################
+        if show_view_options == True:
+            view_box = oasysgui.widgetBox(tab_preview, "Results Options", addSpace=False, orientation="horizontal")
+            view_box_1 = oasysgui.widgetBox(view_box, "", addSpace=False, orientation="vertical", width=350)
+
+            self.view_type_combo = gui.comboBox(view_box_1, self, "view_type", label="View Results",
+                                                labelWidth=220,
+                                                items=["No", "Yes"],
+                                                callback=self.set_ViewType, sendSelectedValue=False, orientation="horizontal")
+        else:
+            self.view_type = 1
+
+
+
         self.preview_id = gui.widgetBox(tab_preview, "", addSpace=True, orientation="vertical")
-        # self.preview_id.setFixedHeight(self.TABS_AREA_HEIGHT - 30)
-        # self.preview_id.setFixedWidth(self.TABS_AREA_WIDTH - 20)
 
         ##
         tab_info = oasysgui.createTabPage(self.main_tabs, "Info")
-        self.info_id = oasysgui.textArea() #height=self.IMAGE_HEIGHT-35)
+        self.photolab_output = oasysgui.textArea() #height=self.IMAGE_HEIGHT-35)
         info_box = oasysgui.widgetBox(tab_info, "", addSpace=True, orientation="horizontal") #, height = self.IMAGE_HEIGHT-20, width = self.IMAGE_WIDTH-20)
-        info_box.layout().addWidget(self.info_id)
+        info_box.layout().addWidget(self.photolab_output)
 
-        ##
-        tab_script = oasysgui.createTabPage(self.main_tabs, "Script")
+        #
+        # add script tab to tabs panel
+        #
+        if show_script_tab:
+            script_tab = oasysgui.createTabPage(self.main_tabs, "Script")
+            self.photolab_python_script = PythonScript()
+            self.photolab_python_script.code_area.setFixedHeight(400)
+            script_box = gui.widgetBox(script_tab, "Python script", addSpace=True, orientation="horizontal")
+            script_box.layout().addWidget(self.photolab_python_script)
 
-        ## data
-        self.current_image = None
 
     def callResetSettings(self):
         if ConfirmDialog.confirmed(parent=self, message="Confirm Reset of the Fields?"):
@@ -104,23 +125,53 @@ class OWPhotolabWidget(widget.OWWidget):
                 pass
 
     def process(self):
-        raise Exception("To be defined in the subclass")
+        self.photolab_output.setText("")
+        self.progressBarInit()
 
-    def preview(self):
-        if self.current_image is None:
-            raise Exception("Please load an image....")
+        sys.stdout = EmittingStream(textWritten=self.writeStdOut)
 
-        f = Figure()
-        figure_canvas = FigureCanvasQTAgg(f)
-        toolbar = NavigationToolbar(figure_canvas, self)
-        ax = f.add_subplot(111)
-        ax.imshow(self.current_image[:,:,:])
+        if self.input_data is None: raise Exception("No Input Data")
 
-        ax.set_xticks([], minor=False)
-        ax.set_yticks([], minor=False)
+        self.process_specific()
 
-        self.preview_id.layout().removeItem(self.preview_id.layout().itemAt(1))
-        self.preview_id.layout().removeItem(self.preview_id.layout().itemAt(0))
-        self.preview_id.layout().addWidget(toolbar)
-        self.preview_id.layout().addWidget(figure_canvas)
-        
+        self.progressBarFinished()
+
+    def preview(self, current_image):
+
+        if self.view_type == 1:
+            if current_image is None:
+                raise Exception("Please load an image....")
+
+            f = Figure()
+            figure_canvas = FigureCanvasQTAgg(f)
+            toolbar = NavigationToolbar(figure_canvas, self)
+            ax = f.add_subplot(111)
+            ax.imshow(current_image[:,:,:])
+            ax.set_xticks([], minor=False)
+            ax.set_yticks([], minor=False)
+
+
+            try:
+                self.preview_id.layout().removeItem(self.preview_id.layout().itemAt(1))
+                self.preview_id.layout().removeItem(self.preview_id.layout().itemAt(0))
+            except:
+                pass
+            self.preview_id.layout().addWidget(toolbar)
+            self.preview_id.layout().addWidget(figure_canvas)
+
+
+    def writeStdOut(self, text):
+        cursor = self.photolab_output.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        cursor.insertText(text)
+        self.photolab_output.setTextCursor(cursor)
+        self.photolab_output.ensureCursorVisible()
+
+
+    def set_ViewType(self):
+        try:
+            self.preview_id.layout().removeItem(self.preview_id.layout().itemAt(1))
+            self.preview_id.layout().removeItem(self.preview_id.layout().itemAt(0))
+
+        except:
+            pass

@@ -9,6 +9,7 @@ import oasys.widgets.gui as oasysgui
 from oasys.widgets.gui import ConfirmDialog
 
 from orangecontrib.photolab.widgets.gui.ow_photolab_widget import OWPhotolabWidget
+from orangecontrib.photolab.util.photolab_objects import PLPhoto
 
 
 # import matplotlib.pyplot as plt
@@ -28,32 +29,36 @@ class OWFileSelector(OWPhotolabWidget):
     category = "Tools"
     keywords = ["data", "file", "load", "read"]
 
-    #inputs = [("my_input_data", object, "set_input"),]
 
-    outputs = [{"name": "filename",
-                "type": str,
-                "doc": "selected file name",
-                "id": "filename"}, ]
+    outputs = [
+                {"name": "PLPhoto",
+                "type": PLPhoto,
+                "doc": "photolab photo",
+                "id": "photolab photo"},
+                {"name": "filename",
+                 "type": str,
+                 "doc": "selected file name",
+                 "id": "filename"},
+               ]
 
     want_main_area=1
 
 
     filename = Setting("None")
+    input_data = PLPhoto()
 
     def __init__(self):
         super().__init__()
 
         file_box = oasysgui.widgetBox(self.general_options_box, "", addSpace=False, orientation="vertical", height=25)
         self.le_file = oasysgui.lineEdit(file_box, self, "filename", label="Select file", addSpace=False, orientation="horizontal")
-        # gui.button(file_box, self, "...", callback=self.select_file)
-        # gui.separator(self.general_options_box)
-        #
+
 
         file_box = oasysgui.widgetBox(self.general_options_box, "", addSpace=False,
-                                      orientation="vertical")  # , height=250)
+                                      orientation="vertical")
         self.model = QFileSystemModel()
         self.model.setRootPath('/Users/srio/Desktop/')
-        self.tree = QTreeView(file_box) #self.general_options_box)
+        self.tree = QTreeView(file_box)
         self.tree.setModel(self.model)
 
         self.tree.setAnimated(False)
@@ -61,15 +66,11 @@ class OWFileSelector(OWPhotolabWidget):
         self.tree.setSortingEnabled(True)
 
         self.tree.setWindowTitle("Dir View")
-        self.tree.resize(370, 600) #(640, 480)
+        self.tree.resize(370, 600)
         self.tree.clicked.connect(self.onClicked)
 
-        # gui.separator(self.general_options_box)
         file_box = oasysgui.widgetBox(self.general_options_box, "", addSpace=False, orientation="vertical", height=25)
 
-        # self.le_file = oasysgui.lineEdit(file_box, self, "filename",
-        #                     label="Select file", addSpace=False, orientation="horizontal")
-        # self.tree.resize(370, 600) #(640, 480)
 
     def onClicked(self, index):
         path = self.sender().model().filePath(index)
@@ -81,13 +82,19 @@ class OWFileSelector(OWPhotolabWidget):
         self.filename = oasysgui.selectFileFromDialog(self, self.filename, "Open File", file_extension_filter="*.*")
         self.le_file.setText(self.filename)
 
-    def process(self):
-        self.send("filename", self.filename)
-        print(">>>>>>>>>>>> filename", self.filename)
-        self.current_image = mpimg.imread(self.filename)
-        print(">>>>>>",self.current_image.shape)
-        self.preview()
+    def process_specific(self):
 
+        self.input_data.set_url(self.filename)
+        self.input_data.load()
+
+        self.photolab_output.setText("\nCurrent image: \n" + self.input_data.info())
+
+        self.preview(self.input_data.image())
+
+        self.send("filename", self.filename)
+        self.send("PLPhoto", self.input_data)
+
+        self.photolab_python_script.set_code(self.input_data.to_python_code())
 
 
     def set_input(self, input_data):
@@ -96,8 +103,6 @@ class OWFileSelector(OWPhotolabWidget):
 if __name__ == "__main__":
 
     import sys
-    from oasys.widgets.exchange import DataExchangeObject
-
 
     app = QApplication(sys.argv)
     w = OWFileSelector()

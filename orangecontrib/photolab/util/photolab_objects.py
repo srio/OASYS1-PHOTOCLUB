@@ -10,6 +10,9 @@ class PLPhoto(object):
     def get_url(self):
         return self._url
 
+    def set_url(self, url):
+        self._url = url
+
     def image(self):
         if self._image is None: self.load()
         return self._image
@@ -18,7 +21,7 @@ class PLPhoto(object):
         import matplotlib.image as mpimg
         self._image = numpy.array(mpimg.imread(self._url))
 
-    def show(self, image=None):
+    def show(self, image=None, show=True):
         import matplotlib.pyplot as plt
         cmap = 'gray'
         fig, ax = plt.subplots()
@@ -28,7 +31,8 @@ class PLPhoto(object):
             ax.imshow(image,cmap=cmap)
         ax.set_xticks([], minor=False)
         ax.set_yticks([], minor=False)
-        plt.show()
+        if show: plt.show()
+        return fig, ax
 
     def nchannels(self):
         s = numpy.array(self.image().shape)
@@ -45,7 +49,7 @@ class PLPhoto(object):
 
     def info(self):
         txt = ""
-        txt += "url:         %s " % self.get_url()
+        txt += "\nurl:         %s " % self.get_url()
         if self.image() is None:
             txt += "\nimage:     None"
         else:
@@ -64,7 +68,7 @@ class PLPhoto(object):
 
     def to_python_code(self):
         txt = "from orangecontrib.photolab.util.photolab_objects import PLPhoto"
-        txt += "\nplimg_in = PLPhoto('%s')" % self.get_url()
+        txt += "\nplimg_in = PLPhoto(url='%s')" % self.get_url()
         return txt
 
 class PLFilter(object):
